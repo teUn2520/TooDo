@@ -1,10 +1,14 @@
 from hammett.core import Button, Screen
 from hammett.core.constants import SourcesTypes, RenderConfig, DEFAULT_STATE, EMPTY_KEYBOARD
-from hammett.core.handlers import register_button_handler, register_input_handler
+from hammett.core.handlers import (
+    register_button_handler,
+    register_typing_handler,
+)
 from hammett.core.screen import StartScreen, RouteMixin
 from hammett.conf import settings
+from telegram.ext import filters
 
-from states import INPUT_STATE
+from TooDo.states import INPUT_STATE
 
 
 async def days_week_dynamic_keyboard(handler):
@@ -42,7 +46,7 @@ class ScheduleScreen(StartScreen):
 
         context.user_data['day_choice'] = payload
 
-        return INPUT_STATE
+        return await TaskInputScreen().sgoto(update, context)
 
 
 class TaskInputScreen(RouteMixin, Screen):
@@ -52,20 +56,22 @@ class TaskInputScreen(RouteMixin, Screen):
 
     cover = settings.MEDIA_ROOT / 'toodo.png'
     description = "Теперь поставь задачу, просто напиши в чат и я добавлю ее в твое расписание."
-    keyboard = EMPTY_KEYBOARD
 
-    @register_input_handler
+    @register_typing_handler
     async def handle_task_input(self, update, context):
         task_text = update.message.text
-
+        print(task_text)
         context.user_data['user_task'] = task_text
 
-        return await TaskConfirm().jump(update, context)
+        return await TaskConfirm().sjump(update, context)
 
 
-class TaskConfirm(Screen):
+class TaskConfirm(RouteMixin, Screen):
+    routes = (
+        ({INPUT_STATE}, DEFAULT_STATE),
+    )
 
-    async def get_user_context(self, update, context):
+    async def get_config(self, update, context):
         user_task = context.user_data['user_task']
         user_day = context.user_data['day_choice']
         description = f"Ваша задача {user_task} установлена на {user_day}"
