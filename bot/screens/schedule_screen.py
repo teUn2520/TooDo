@@ -1,10 +1,10 @@
 from hammett.core import Button, Screen
-from hammett.core.constants import SourcesTypes, RenderConfig, DEFAULT_STATE, EMPTY_KEYBOARD
+from hammett.core.constants import SourcesTypes, RenderConfig, DEFAULT_STATE
 from hammett.core.handlers import register_button_handler, register_typing_handler
 from hammett.core.screen import StartScreen, RouteMixin
 from hammett.conf import settings
 
-from states import INPUT_STATE
+from bot.states import INPUT_STATE
 
 
 async def days_week_dynamic_keyboard(handler):
