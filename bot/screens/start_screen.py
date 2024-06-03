@@ -3,7 +3,7 @@ from hammett.core.constants import SourcesTypes
 from hammett.core.screen import StartScreen
 from hammett.conf import settings
 
-from screens.schedule_screen import ScheduleScreen
+from bot.screens.schedule_screen import ScheduleScreen
 
 
 class HelloScreen(StartScreen):
