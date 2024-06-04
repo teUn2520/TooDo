@@ -111,7 +111,3 @@ class TaskConfirm(RouteMixin, Screen):
         ]
 
         return RenderConfig(description=description, keyboard=keyboard)
-
-    @register_button_handler
-    async def handle_task_create(self, update, context):
-        pass
