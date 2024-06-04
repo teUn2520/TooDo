@@ -3,6 +3,7 @@ from hammett.core.constants import SourcesTypes, RenderConfig, DEFAULT_STATE
 from hammett.core.handlers import register_button_handler, register_typing_handler
 from hammett.core.mixins import StartMixin, RouteMixin
 from hammett.conf import settings
+import httpx
 
 from bot.states import INPUT_STATE
 
@@ -13,12 +14,12 @@ async def days_week_dynamic_keyboard(handler):
 
     return [
         [Button(
-            day,
+            weekday,
             handler,
             source_type=SourcesTypes.HANDLER_SOURCE_TYPE,
-            payload=day
+            payload={num: weekday}
         )]
-        for day in days_week
+        for num, weekday in enumerate(days_week)
     ]
 
 
@@ -43,7 +44,7 @@ class ScheduleScreen(RouteMixin, StartMixin):
 
     async def get_config(self, update, context, **kwargs):
         try:
-            keyboard = await days_week_dynamic_keyboard(self.handle_button_click)
+            keyboard = await days_week_dynamic_keyboard(self.weekday_catcher)
             current_description = await self.get_description(update, context)
             additional_description = await schedule_dynamic_description(context)
             description = current_description + additional_description
@@ -54,10 +55,15 @@ class ScheduleScreen(RouteMixin, StartMixin):
             return RenderConfig(keyboard=keyboard)
 
     @register_button_handler
-    async def handle_button_click(self, update, context):
+    async def weekday_catcher(self, update, context):
         payload = await self.get_payload(update, context)
-
-        context.user_data['user_day_choice'] = payload
+        print(payload)
+        for num in range(6):
+            try:
+                context.user_data['user_day_choice'] = payload[num]
+            except KeyError:
+                continue
+        print(context.user_data['user_day_choice'])
 
         return await TaskInputScreen().sgoto(update, context)
 
@@ -78,10 +84,10 @@ class TaskInputScreen(RouteMixin, Screen):
         ]]
 
     @register_typing_handler
-    async def handle_task_input(self, update, context):
-        task_text = update.message.text
+    async def user_input_catcher(self, update, context):
+        user_input_text = update.message.text
 
-        context.user_data['user_task'] = task_text
+        context.user_data['user_task'] = user_input_text
 
         return await TaskConfirm().sjump(update, context)
 
@@ -111,3 +117,7 @@ class TaskConfirm(RouteMixin, Screen):
         ]
 
         return RenderConfig(description=description, keyboard=keyboard)
+
+    #@register_button_handler
+    #async def retask(self, update, context):
+
