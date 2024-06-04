@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from backend.apps.DatabaseForm.views import TelegramUserViewSet
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/telegramuser/', TelegramUserViewSet.as_view({'get': 'list', 'post': 'create'})),
 ]

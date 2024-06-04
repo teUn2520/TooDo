@@ -1,5 +1,5 @@
-from hammett.core import Application, Button
-from hammett.core.constants import DEFAULT_STATE, SourcesTypes
+from hammett.core import Application
+from hammett.core.constants import DEFAULT_STATE
 
 from screens.start_screen import HelloScreen
 from screens.schedule_screen import ScheduleScreen, TaskInputScreen, TaskConfirm
