@@ -1,12 +1,12 @@
 from hammett.core import Button
 from hammett.core.constants import SourcesTypes
-from hammett.core.screen import StartScreen
+from hammett.core.mixins import StartMixin
 from hammett.conf import settings
 
 from bot.screens.schedule_screen import ScheduleScreen
 
 
-class HelloScreen(StartScreen):
+class HelloScreen(StartMixin):
     cover = settings.MEDIA_ROOT / 'toodo.png'
     description = 'Привет, я твой персональный помощник.'
 
