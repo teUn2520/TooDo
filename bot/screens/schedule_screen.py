@@ -1,7 +1,7 @@
 from hammett.core import Button, Screen
 from hammett.core.constants import SourcesTypes, RenderConfig, DEFAULT_STATE
 from hammett.core.handlers import register_button_handler, register_typing_handler
-from hammett.core.screen import StartScreen, RouteMixin
+from hammett.core.mixins import StartMixin, RouteMixin
 from hammett.conf import settings
 
 from bot.states import INPUT_STATE
@@ -31,7 +31,7 @@ async def schedule_dynamic_description(context):
     return description
 
 
-class ScheduleScreen(RouteMixin, StartScreen):
+class ScheduleScreen(RouteMixin, StartMixin):
     routes = (
         ({INPUT_STATE}, DEFAULT_STATE),
     )
