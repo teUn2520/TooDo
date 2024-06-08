@@ -9,9 +9,9 @@ class TelegramUser(models.Model):
 
 
 class TelegramTask(models.Model):
-    user = models.PositiveBigIntegerField(blank=False)
+    user_id = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     weekday = models.SmallIntegerField(blank=False)
     description = models.CharField(max_length=1000, blank=False)
 
     def __str__(self):
-        return {f'{self.user}'}
+        return {f'{self.user_id}'}

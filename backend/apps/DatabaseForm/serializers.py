@@ -6,10 +6,10 @@ from backend.apps.DatabaseForm.models import TelegramUser, TelegramTask
 class TelegramUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TelegramUser
-        fields = ['telegram_id']
+        fields = ('telegram_id', )
 
 
 class TelegramTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = TelegramTask
-        fields = ['user', 'weekday', 'description']
+        fields = ('user_id', 'weekday', 'description')
