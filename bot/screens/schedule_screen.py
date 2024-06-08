@@ -4,6 +4,7 @@ from hammett.core.handlers import register_button_handler, register_typing_handl
 from hammett.core.mixins import StartMixin, RouteMixin
 from hammett.conf import settings
 import httpx
+import json
 
 from bot.states import INPUT_STATE
 
@@ -57,13 +58,12 @@ class ScheduleScreen(RouteMixin, StartMixin):
     @register_button_handler
     async def weekday_catcher(self, update, context):
         payload = await self.get_payload(update, context)
-        print(payload)
         for num in range(6):
             try:
                 context.user_data['user_day_choice'] = payload[num]
+                context.user_data['user_weekday_id'] = num
             except KeyError:
                 continue
-        print(context.user_data['user_day_choice'])
 
         return await TaskInputScreen().sgoto(update, context)
 
@@ -106,18 +106,32 @@ class TaskConfirm(RouteMixin, Screen):
         keyboard = [
             [Button(
                 "Создать задачу сначала.",
-                ScheduleScreen,
-                source_type=SourcesTypes.GOTO_SOURCE_TYPE,
+                self.retask,
             )],
             [Button(
                 "Все верно.",
-                ScheduleScreen,
-                source_type=SourcesTypes.GOTO_SOURCE_TYPE,
+                self.task_confirm,
             )]
         ]
 
         return RenderConfig(description=description, keyboard=keyboard)
 
-    #@register_button_handler
-    #async def retask(self, update, context):
+    @register_button_handler
+    async def retask(self, update, context):
+        context.user_data.pop('user_task')
+        context.user_data.pop('user_day_choice')
+        context.user_data.pop('user_weekday_id')
 
+        return await ScheduleScreen().sgoto(update, context)
+
+    @register_button_handler
+    async def task_confirm(self, update, context):
+        user_task = context.user_data['user_task']
+        user_weekday_id = context.user_data['user_weekday_id']
+        user_data = update.effective_user
+
+        data = {'user_id': user_data.id, 'weekday': user_weekday_id, 'description': user_task}
+
+        response = await httpx.post('http://127.0.0.1:8000/api/telegramtask/', data=data)
+
+        return ScheduleScreen().sgoto(update, context)

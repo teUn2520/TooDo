@@ -23,7 +23,6 @@ class HelloScreen(StartMixin):
     async def go_to_schedule_screen(self, update, context):
         user_data = update.effective_user
 
-        # async with httpx.AsyncClient(http2=True) as client:
-        #     response = await client.post('http://127.0.0.1:8000/api/telegramuser/', data={'telegram_id': user_data.id})
+        response = httpx.post('http://127.0.0.1:8000/api/telegramuser/', data={'telegram_id': user_data.id})
 
         return await ScheduleScreen().sgoto(update, context)

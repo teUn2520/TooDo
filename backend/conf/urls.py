@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from backend.apps.DatabaseForm.views import TelegramUserViewSet, TelegramTaskViewSet
+from backend.apps.DatabaseForm.viewsets import TelegramUserViewSet, TelegramTaskViewSet
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
