@@ -8,11 +8,11 @@ import json
 
 from bot.states import INPUT_STATE
 
+DAYS_WEEK = ("Понедельник", "Вторник", "Среда", "Четверг",
+             "Пятница", "Суббота", "Воскресенье")
+
 
 async def days_week_dynamic_keyboard(handler):
-    days_week = ("Понедельник", "Вторник", "Среда", "Четверг",
-                 "Пятница", "Суббота", "Воскресенье")
-
     return [
         [Button(
             weekday,
@@ -20,17 +20,8 @@ async def days_week_dynamic_keyboard(handler):
             source_type=SourcesTypes.HANDLER_SOURCE_TYPE,
             payload={num: weekday}
         )]
-        for num, weekday in enumerate(days_week)
+        for num, weekday in enumerate(DAYS_WEEK)
     ]
-
-
-async def schedule_dynamic_description(context):
-    user_task = context.user_data['user_task']
-    user_day_choice = context.user_data['user_day_choice']
-
-    description = f"{user_day_choice}: {user_task}\n"
-
-    return description
 
 
 class ScheduleScreen(RouteMixin, StartMixin):
@@ -44,21 +35,27 @@ class ScheduleScreen(RouteMixin, StartMixin):
                    '<b>Твое раписание:</b>\n')
 
     async def get_config(self, update, context, **kwargs):
-        try:
-            keyboard = await days_week_dynamic_keyboard(self.weekday_catcher)
-            current_description = await self.get_description(update, context)
-            additional_description = await schedule_dynamic_description(context)
-            description = current_description + additional_description
+        keyboard = await days_week_dynamic_keyboard(self.weekday_catcher)
+        current_description = await self.get_description(update, context)
+        response = httpx.get('http://127.0.0.1:8000/api/telegramtask/')
+        response = response.json()
 
-            return RenderConfig(description=description, keyboard=keyboard)
+        user_data = update.effective_user
 
-        except KeyError:
-            return RenderConfig(keyboard=keyboard)
+        for task in response:
+            if task['user_id'] == user_data.id:
+                for num, weekday in enumerate(DAYS_WEEK):
+                    if task['weekday'] == num:
+                        description = current_description + f"{weekday}: {task['description']}\n"
+            else:
+                description = current_description + "Никаких задач не установлено."
+
+        return RenderConfig(description=description, keyboard=keyboard)
 
     @register_button_handler
     async def weekday_catcher(self, update, context):
         payload = await self.get_payload(update, context)
-        for num in range(6):
+        for num in range(7):
             try:
                 context.user_data['user_day_choice'] = payload[num]
                 context.user_data['user_weekday_id'] = num
@@ -118,10 +115,6 @@ class TaskConfirm(RouteMixin, Screen):
 
     @register_button_handler
     async def retask(self, update, context):
-        context.user_data.pop('user_task')
-        context.user_data.pop('user_day_choice')
-        context.user_data.pop('user_weekday_id')
-
         return await ScheduleScreen().sgoto(update, context)
 
     @register_button_handler
@@ -131,7 +124,6 @@ class TaskConfirm(RouteMixin, Screen):
         user_data = update.effective_user
 
         data = {'user_id': user_data.id, 'weekday': user_weekday_id, 'description': user_task}
+        httpx.post('http://127.0.0.1:8000/api/telegramtask/', data=data)
 
-        response = await httpx.post('http://127.0.0.1:8000/api/telegramtask/', data=data)
-
-        return ScheduleScreen().sgoto(update, context)
+        return await ScheduleScreen().sgoto(update, context)
