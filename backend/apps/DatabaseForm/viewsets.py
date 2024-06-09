@@ -7,6 +7,7 @@ from backend.apps.DatabaseForm.serializers import TelegramUserSerializer, Telegr
 class TelegramUserViewSet(viewsets.ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
+    lookup_field = 'telegram_id'
 
 
 class TelegramTaskViewSet(viewsets.ModelViewSet):
