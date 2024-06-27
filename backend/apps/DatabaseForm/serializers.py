@@ -12,4 +12,4 @@ class TelegramUserSerializer(serializers.ModelSerializer):
 class TelegramTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = TelegramTask
-        fields = ('user_id', 'weekday', 'description')
+        fields = ('id', 'user_id', 'weekday', 'description')

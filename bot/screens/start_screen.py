@@ -25,8 +25,8 @@ class HelloScreen(StartMixin):
         response = response.json()
         for aut_user in response:
             if aut_user['telegram_id'] == user_data.id:
-                return await ScheduleScreen().sgoto(update, context)
+                return await ScheduleScreen().goto(update, context)
 
         httpx.post('http://127.0.0.1:8000/api/telegramuser/', data={'telegram_id': user_data.id})
 
-        return await ScheduleScreen().sgoto(update, context)
+        return await ScheduleScreen().goto(update, context)
