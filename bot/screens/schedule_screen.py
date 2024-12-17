@@ -4,9 +4,8 @@ from hammett.core.handlers import register_button_handler, register_typing_handl
 from hammett.core.mixins import StartMixin, RouteMixin
 from hammett.conf import settings
 import httpx
-import json
 
-from bot.states import INPUT_STATE, DELETE_STATE
+from bot.states import INPUT_STATE, DELETE_STATE, SEARCH_STATE
 
 DAYS_WEEK = ("Понедельник", "Вторник", "Среда", "Четверг",
              "Пятница", "Суббота", "Воскресенье")
@@ -36,6 +35,8 @@ class ScheduleScreen(StartMixin, Screen):
                    self.new_task),
             Button("Удалить задачу",
                    self.delete_task),
+            Button("Найти задачу",
+                   self.search_task),
         ]]
 
     @register_button_handler
@@ -44,7 +45,11 @@ class ScheduleScreen(StartMixin, Screen):
 
     @register_button_handler
     async def delete_task(self, update, context):
-        return await TaskDeleteScreen().sgoto(update, context)
+        return await TaskDeleteInputScreen().sgoto(update, context)
+
+    @register_button_handler
+    async def search_task(self, update, context):
+        return await TaskSearchInputScreen().sgoto(update, context)
 
     async def get_config(self, update, context, **kwargs):
         current_description = await self.get_description(update, context)
@@ -63,7 +68,54 @@ class ScheduleScreen(StartMixin, Screen):
         return RenderConfig(description=current_description)
 
 
-class TaskDeleteScreen(RouteMixin, Screen):
+class TaskSearchInputScreen(RouteMixin, Screen):
+    routes = (
+        ({DEFAULT_STATE}, SEARCH_STATE),
+    )
+    cover = settings.MEDIA_ROOT / 'toodo.png'
+    description = "Напиши день недели или задачу, которую хочешь найти.\n"
+
+    @register_typing_handler
+    async def user_search_input(self, update, context):
+        user_task_search_text = update.message.text
+        context.user_data['user_task_search_text'] = user_task_search_text
+
+        return await TaskSearchingScreen().sjump(update, context)
+
+
+class TaskSearchingScreen(RouteMixin, Screen):
+    routes = (
+        ({SEARCH_STATE}, DEFAULT_STATE),
+    )
+    cover = settings.MEDIA_ROOT / 'toodo.png'
+    description = "Найденные задачи:\n"
+
+    async def add_default_keyboard(self, _update, _context):
+        return [[
+            Button("Назад",
+                   ScheduleScreen,
+                   source_type=SourcesTypes.GOTO_SOURCE_TYPE),
+        ]]
+
+    async def get_config(self, update, context, **kwargs):
+        current_description = await self.get_description(update, context)
+        response = httpx.get('http://127.0.0.1:8000/api/telegramtask/')
+        response = response.json()
+        user_data = update.effective_user
+
+        for task in response:
+            if task['user_id'] == user_data.id:
+                for num, weekday in enumerate(DAYS_WEEK):
+                    if context.user_data['user_task_search_text'] == weekday:
+                        if task['weekday'] == num:
+                            current_description += f"{weekday}: {task['description']}\n"
+                    if context.user_data['user_task_search_text'] in task['description'] and num == task['weekday']:
+                        current_description += f"{weekday}: {task['description']}\n"
+
+        return RenderConfig(description=current_description)
+
+
+class TaskDeleteInputScreen(RouteMixin, Screen):
     routes = (
         ({DEFAULT_STATE}, DELETE_STATE),
     )
@@ -142,7 +194,7 @@ class TaskDeleteConfirmScreen(RouteMixin, Screen):
 
     @register_button_handler
     async def back_to_delete_input(self, update, context):
-        return await TaskDeleteScreen().sgoto(update, context)
+        return await TaskDeleteInputScreen().sgoto(update, context)
 
 
 class TaskDayChoiceScreen(RouteMixin, Screen):
@@ -191,10 +243,10 @@ class TaskInputScreen(RouteMixin, Screen):
 
         context.user_data['user_task'] = user_input_text
 
-        return await TaskConfirm().sjump(update, context)
+        return await TaskConfirmScreen().sjump(update, context)
 
 
-class TaskConfirm(RouteMixin, Screen):
+class TaskConfirmScreen(RouteMixin, Screen):
     routes = (
         ({INPUT_STATE}, DEFAULT_STATE),
     )

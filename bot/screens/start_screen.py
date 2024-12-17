@@ -3,7 +3,6 @@ from hammett.core.handlers import register_button_handler
 from hammett.core.mixins import StartMixin
 from hammett.conf import settings
 import httpx
-import json
 
 from bot.screens.schedule_screen import ScheduleScreen
 
