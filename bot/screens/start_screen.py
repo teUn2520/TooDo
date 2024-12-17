@@ -3,7 +3,6 @@ from hammett.core.handlers import register_button_handler
 from hammett.core.mixins import StartMixin
 from hammett.conf import settings
 import httpx
-import json
 
 from bot.screens.schedule_screen import ScheduleScreen
 
@@ -25,8 +24,8 @@ class HelloScreen(StartMixin):
         response = response.json()
         for aut_user in response:
             if aut_user['telegram_id'] == user_data.id:
-                return await ScheduleScreen().sgoto(update, context)
+                return await ScheduleScreen().goto(update, context)
 
         httpx.post('http://127.0.0.1:8000/api/telegramuser/', data={'telegram_id': user_data.id})
 
-        return await ScheduleScreen().sgoto(update, context)
+        return await ScheduleScreen().goto(update, context)
