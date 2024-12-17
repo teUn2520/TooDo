@@ -2,9 +2,10 @@ from hammett.core import Application
 from hammett.core.constants import DEFAULT_STATE
 
 from screens.start_screen import HelloScreen
-from screens.schedule_screen import (ScheduleScreen, TaskInputScreen, TaskConfirm,
-                                     TaskDayChoiceScreen, TaskDeleteScreen, TaskDeleteConfirmScreen)
-from states import INPUT_STATE, DELETE_STATE
+from screens.schedule_screen import (ScheduleScreen, TaskInputScreen, TaskConfirmScreen,
+                                     TaskDayChoiceScreen, TaskDeleteInputScreen, TaskDeleteConfirmScreen,
+                                     TaskSearchInputScreen, TaskSearchingScreen)
+from states import INPUT_STATE, DELETE_STATE, SEARCH_STATE
 
 
 def main():
@@ -14,9 +15,11 @@ def main():
         name,
         entry_point=HelloScreen,
         states={
-            DEFAULT_STATE: [HelloScreen, ScheduleScreen, TaskConfirm, TaskDayChoiceScreen, TaskDeleteConfirmScreen],
+            DEFAULT_STATE: [HelloScreen, ScheduleScreen, TaskConfirmScreen,
+                            TaskDayChoiceScreen, TaskDeleteConfirmScreen, TaskSearchingScreen],
             INPUT_STATE: [TaskInputScreen],
-            DELETE_STATE: [TaskDeleteScreen],
+            DELETE_STATE: [TaskDeleteInputScreen],
+            SEARCH_STATE: [TaskSearchInputScreen],
         },
     )
     app.run()
